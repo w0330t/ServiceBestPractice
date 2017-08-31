@@ -12,6 +12,7 @@ import android.os.Environment
 import android.os.IBinder
 import android.support.v4.app.NotificationCompat
 import android.support.v4.app.ServiceCompat
+import android.util.Log
 import android.widget.Toast
 import java.io.File
 
@@ -59,7 +60,7 @@ class DownloadService : Service() {
         return mBinder
     }
 
-    inner class DownloadBinder() : Binder(){
+    inner class DownloadBinder : Binder(){
         fun startDownload(url: String){
             if(downloadTask == null){
                 downloadUrl = url

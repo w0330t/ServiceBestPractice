@@ -5,26 +5,25 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.IBinder
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.view.View
 import android.widget.Button
-import android.widget.Toast
 import org.jetbrains.anko.find
 import org.jetbrains.anko.toast
-import java.util.jar.Manifest
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
 
-    private val downloadBinder: DownloadService.DownloadBinder? = null
+    private var downloadBinder: DownloadService.DownloadBinder? = null
     private val connection = object : ServiceConnection{
         override fun onServiceDisconnected(name: ComponentName?) {}
 
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            val downloadBinder = service as DownloadService.DownloadBinder
+            downloadBinder = service as DownloadService.DownloadBinder
         }
 
     }
@@ -52,9 +51,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             return
         }
         when (v?.id) {
-            R.id.start_download -> downloadBinder.startDownload("http://mirrors.163.com/archlinux/iso/2017.08.01/archlinux-2017.08.01-x86_64.iso")
-            R.id.pause_download -> downloadBinder.pauseDownload()
-            R.id.cancel_download -> downloadBinder.cancelDownload()
+            R.id.start_download -> downloadBinder?.startDownload("http://mirrors.163.com/archlinux/iso/2017.08.01/arch/boot/x86_64/archiso.img")
+            R.id.pause_download -> downloadBinder?.pauseDownload()
+            R.id.cancel_download -> downloadBinder?.cancelDownload()
         }
     }
 

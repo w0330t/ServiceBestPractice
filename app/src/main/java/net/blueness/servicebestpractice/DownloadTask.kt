@@ -2,6 +2,7 @@ package net.blueness.servicebestpractice
 
 import android.os.AsyncTask
 import android.os.Environment
+import android.util.Log
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
@@ -21,7 +22,7 @@ class DownloadTask(private val listener: DownloadListener): AsyncTask<String, In
 
     private var isCanceled = false
     private var isPaused = false
-    private var lastProgress: Int? = null
+    private var lastProgress: Int = 0
 
     override fun doInBackground(vararg params: String?): Int {
         var inputStream: InputStream? = null
@@ -62,23 +63,24 @@ class DownloadTask(private val listener: DownloadListener): AsyncTask<String, In
                 savedFile.seek(downloadedLength) //跳过已经下载的字节
                 val b = ByteArray(1024)
                 var total: Int = 0
-                var len: Int? = null
+                var len: Int = -1
                 do {
+//                    Log.i("DownloadTask-len", len.toString())
+
                     if (isCanceled) {
                         return FINAL_TYPE_CANCELED
                     }
                     else if (isPaused) {
                         return FINAL_TYPE_PAUSED
                     }
-                    else {
+                    else if (len != -1){
                         total += len!!
                         savedFile!!.write(b, 0, len!!)
 //                        计算百分比
-                        val progress: Int = ((total + downloadedLength) * 100 / contentLength) as Int
+                        val progress = ((total + downloadedLength) * 100 / contentLength).toInt()
                         publishProgress(progress)
                     }
-
-                    len = inputStream?.read(b)
+                    len = inputStream?.read(b)!!
                 } while (len != -1)
 
                 //上面循环完成后下载完毕
@@ -100,6 +102,7 @@ class DownloadTask(private val listener: DownloadListener): AsyncTask<String, In
                 file.delete()
             }
         }
+        Log.i("DownloadTask-FAILED", "FAILED")
         return FINAL_TYPE_FAILED
     }
 
@@ -108,11 +111,11 @@ class DownloadTask(private val listener: DownloadListener): AsyncTask<String, In
 //        获取进度，如果更新则重新赋值
         val progress = values[0]
         if (progress != null) {
-            if (progress > this.lastProgress!!){
+            Log.i("DownloadTask-lastProgress", lastProgress.toString())
+            if (progress > lastProgress){
                 listener.onProgress(progress)
                 lastProgress = progress
             }
-
         }
     }
 
