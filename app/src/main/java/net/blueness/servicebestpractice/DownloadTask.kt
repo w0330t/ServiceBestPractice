@@ -12,14 +12,13 @@ import java.io.RandomAccessFile
  * Created by Blueness on 2017/8/31.
  */
 
-class DownloadTask: AsyncTask<String, Int, Int>() {
+class DownloadTask(private val listener: DownloadListener): AsyncTask<String, Int, Int>() {
 
     val FINAL_TYPE_SUCCESS = 0
     val FINAL_TYPE_FAILED = 1
     val FINAL_TYPE_PAUSED = 2
     val FINAL_TYPE_CANCELED = 3
 
-    private var listener: DownloadListener? = null
     private var isCanceled = false
     private var isPaused = false
     private var lastProgress: Int? = null
@@ -34,13 +33,13 @@ class DownloadTask: AsyncTask<String, Int, Int>() {
             val directory: String = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path
             val fileName = downloadUrl?.substring(downloadUrl.lastIndexOf("/"))
 
-            file = File(directory, fileName)
+            file = File(directory + fileName)
             if (file.exists()) {
                 downloadedLength = file.length()
             }
 
 //            判定已有文件是否和网络的文件相同
-            val contentLength: Long = getContentLength(downloadUrl)
+            val contentLength: Long = getContentLength(downloadUrl)!!
             if (contentLength == 0L) {
                 return FINAL_TYPE_FAILED
             }
@@ -110,7 +109,7 @@ class DownloadTask: AsyncTask<String, Int, Int>() {
         val progress = values[0]
         if (progress != null) {
             if (progress > this.lastProgress!!){
-                listener?.onProgress(progress)
+                listener.onProgress(progress)
                 lastProgress = progress
             }
 
@@ -119,10 +118,10 @@ class DownloadTask: AsyncTask<String, Int, Int>() {
 
     override fun onPostExecute(status: Int?) {
         when (status){
-            FINAL_TYPE_SUCCESS -> listener?.onSuccess()
-            FINAL_TYPE_FAILED -> listener?.onFailed()
-            FINAL_TYPE_PAUSED -> listener?.onPaused()
-            FINAL_TYPE_CANCELED -> listener?.onCanceled()
+            FINAL_TYPE_SUCCESS -> listener.onSuccess()
+            FINAL_TYPE_FAILED -> listener.onFailed()
+            FINAL_TYPE_PAUSED -> listener.onPaused()
+            FINAL_TYPE_CANCELED -> listener.onCanceled()
         }
     }
 
@@ -135,7 +134,7 @@ class DownloadTask: AsyncTask<String, Int, Int>() {
     }
 
 
-    fun getContentLength(downloadUrl: String?): Long {
+    fun getContentLength(downloadUrl: String?): Long? {
         val client = OkHttpClient()
         val request = Request.Builder()
                 .url(downloadUrl)
